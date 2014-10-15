@@ -1,0 +1,68 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="diagram-plugin.css" />
+		<title>
+			Diagram
+		</title>
+	</head>
+	<body>
+		<div class="container" id="stage"></div>
+		<!-- <textarea style="float:left;" id="box" rows="40" cols="120"></textarea>
+		<input type="text" id="text" value="7" />
+		<button type="button" id="button">Submit</button> -->
+		<script type="text/javascript" src="library/jquery-1.6.2.js"></script>
+		<script type="text/javascript" src="library/jquery-ui-1.8.16.custom.min.js"></script>
+		<script type="text/javascript" src="library/d3.v2.js"></script>
+		<script type="text/javascript" src="library/jquery.velocity.min.js"></script>
+		<script type="text/javascript" src="dataProvider.js"></script>
+		<script type="text/javascript" src="diagram-plugin.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$("#stage").draggable();
+				window.diagram = new Diagram("stage");
+				/*diagram.drawFence(2);
+				diagram.drawFence(3);
+				diagram.drawFence(4);*/
+			    diagram
+			    	.setData(dataProvider().slice(0,5));
+
+			    var tableRenderPromises = diagram.renderTables();
+			    $.when.apply($, tableRenderPromises).then(function() {
+			    	drawConnections();
+			    });
+
+			    /*setTimeout(function() {
+			        //diagram.drawConnection("DS1_Table1_attr6", "DS1_Table2_attr2");
+			        diagram.drawConnection("DS1_Table1_attr2", "DS1_Table2_attr8");
+			        diagram.drawConnection("DS1_Table2_attr9", "DS1_Table1_attr1");
+					//diagram.drawConnection("DS1_Table2_attr9", "DS1_Table3_attr2");
+					//diagram.drawConnection("DS1_Table2_attr8", "DS1_Table3_attr9");
+			    }, 1000);*/
+				function drawConnections() {
+		    		diagram.drawConnection("DS1_Table1_attr2", "DS1_Table3_attr2");
+					diagram.drawConnection("DS1_Table2_attr3", "DS1_Table1_attr4");
+			        diagram.drawConnection("DS1_Table1_attr5", "DS1_Table3_attr4");
+			        diagram.drawConnection("DS2_Table1_attr4", "DS1_Table1_attr1");
+			        diagram.drawConnection("DS2_Table2_attr3", "DS1_Table1_attr4");
+			        diagram.drawConnection("DS1_Table2_attr3", "DS2_Table1_attr3");
+			    }
+			    
+				// create the zoom listener
+				var zoomListener = d3.behavior.zoom()
+				  .scaleExtent([0.5, 2])
+				  .on("zoom", zoomHandler);
+
+				// function for handling zoom event
+				function zoomHandler() {
+				  $("#stage")
+				  	.css("-webkit-transform", "-webkit-translate("+d3.event.translate+"px)")
+				  	.css("transform", "translate("+d3.event.translate+"px)")
+				  	.css("zoom", d3.event.scale);
+				}
+
+				// apply the zoom behavior to the svg image
+				d3.select("body").call(zoomListener);
+			});
+		</script>
+	</body>
+</html>

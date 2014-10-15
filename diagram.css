@@ -1,0 +1,83 @@
+body {
+	background-color: #ccc;
+	font-size: 0.75em;
+	overflow: hidden;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-button {
+  width: 5px;
+  height:2px;
+}
+
+::-webkit-scrollbar-track {
+  background:#eee;
+  border: thin solid lightgray;
+  box-shadow: 0px 0px 3px #dfdfdf inset;
+  border-radius:10px;
+}
+::-webkit-scrollbar-thumb {
+  background:#999;
+  border: thin solid gray;
+  border-radius:10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background:#7d7d7d;
+}     
+#stage {
+	height: 100%;
+	width: 100%;
+	margin: auto;
+	position: relative;
+}
+.layout {
+	position: absolute;
+	border: 1px solid #222;
+}
+.entity {
+	border: 1px solid #525f76;
+	z-index: 1;
+}
+.title {
+	background: #525f76;
+	height: 25px;
+	/*cursor: move;*/
+	color: #fff;
+	line-height: 25px;
+}
+.entity_attribute {
+	background: #fff;
+	height: 25px;
+	border-bottom: 1px solid #525f76;
+	line-height: 25px;
+	cursor: pointer;
+}
+.attributeslist {
+	/* position: relative; */
+}
+.baseHolder {
+	background-color: #525f76;
+}
+.do-select {
+	color: #ccc;
+}
+.connection_tooltip {
+	background: #fff;
+	border-radius: 2px;
+	border: 2px solid green;
+	z-index: 10;
+	padding: 5px;
+	text-align: center;
+	box-shadow: 0px 1px 8px 3px #999;
+	opacity: 0;
+}
+.connection_tooltip em {
+	background: orange;
+	padding: 1px 5px;
+	font-size: 0.8em;
+}
+.source-attr, .target-attr {
+	color: #fff;
+}
