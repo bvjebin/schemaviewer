@@ -81,3 +81,9 @@ body {
 .source-attr, .target-attr {
 	color: #fff;
 }
+.tableCount {
+	position: fixed;
+	top: 10px;
+	right: 20px;
+	width: 50px;
+}

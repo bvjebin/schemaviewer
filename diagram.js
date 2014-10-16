@@ -177,13 +177,13 @@
 					$tooltip.css("z-index", 500).velocity({"opacity": 1}, {queue: false});
 					tooltipConf.node.html(html).style("left", function() {
 						var pos = positionTooltip({
-								x: d3.event.pageX,
+								x: (d3.event.pageX + 20),
 								y: d3.event.pageY
 							});
 						return (pos.left + 10) + 'px';
 					}).style("top", function() {
 						var pos = positionTooltip({
-								x: d3.event.pageX,
+								x: (d3.event.pageX + 20),
 								y: d3.event.pageY
 							});
 						return (pos.top - 10) + 'px';
@@ -192,13 +192,13 @@
 				.on("mousemove", function() {
 					tooltipConf.node.style("left", function() {
 						var pos = positionTooltip({
-							x: d3.event.pageX,
+							x: (d3.event.pageX + 20),
 							y: d3.event.pageY
 						});
 						return (pos.left + 10) + 'px';
 					}).style("top", function() {
 						var pos = positionTooltip({
-							x: d3.event.pageX,
+							x: (d3.event.pageX + 20),
 							y: d3.event.pageY
 						});
 						return (pos.top - 10) + 'px';
@@ -273,7 +273,12 @@
 			//re-calcuating target node' y point based on visibilty in terms of scrollable area
 			elementViewPortFlag = isElementInViewPort($target);
 			if(elementViewPortFlag == "bottom") {
-				targetPointY = $targetParent.height() - 5;
+				if(direction.indexOf("n") != -1) {
+					targetPointY = $targetParent.height() - 5;
+				} else  {
+					targetPointY = svgHeight - laneWidth;
+				}
+
 			} else if(elementViewPortFlag == "top") {
 				targetPointY = targetParentPosition.top + attributeHeight - 5;
 			}
@@ -525,9 +530,9 @@
 
 		function isElementInViewPort($elem) {
 			var $scrollableElement = $elem.parents(".attributeslist"),
-				docViewTop = $scrollableElement.scrollTop(),
+				docViewTop = $scrollableElement.offset().top,
 				docViewBottom = docViewTop + $scrollableElement.height(),
-				elemTop = $elem.position().top + ($elem.height()/2),
+				elemTop = $elem.offset().top, //25 for title
 				elemBottom = elemTop + ($elem.height()/2);
 
 			if((elemBottom <= docViewBottom) && (elemTop >= docViewTop) || ($scrollableElement[0].scrollHeight == $scrollableElement[0].clientHeight)) {
@@ -547,6 +552,7 @@
             table.id = tableInfo.identifier;
             table.style.position = "absolute";
             table.style.overflow = "hidden";
+            table.style.width = tableWidth+"px";
 
             tableTitleContainer = document.createElement("div");
             tableTitleContainer.className = "titleContainer";
@@ -597,7 +603,6 @@
 			if(!$("."+id).length) {
 				return;
 			}
-			relativeSVGtop = Math.abs($entity.position().top - $("."+id).position().top);
 			
 			paths.each(function(idx, item) {
 				var $this = $(this),
@@ -610,6 +615,7 @@
 					targetViewFlag,
 					sourceYpoint,
 					targetYpoint;
+				relativeSVGtop = Math.abs($entity.position().top - $("svg."+$this.attr("data-start")+"___"+$this.attr("data-end")).position().top);
 				if(involvedSourceAttr.length) {
 					sourceViewFlag = isElementInViewPort(involvedSourceAttr);
 					if(sourceViewFlag === true) {
@@ -659,123 +665,7 @@
             return positions;
         };
 
-        /*this.calculateLayout = function(totalTableCount) {
-            var totalTableCount = parseInt(totalTableCount, 10), totalAngle = 360, positionInfo = {};
-            //this.drawFence();
-            //return;
-            switch(totalTableCount) {
-                case 2:
-                    positionInfo.angles = [[0, 180]];
-                    positionInfo.numberOfImaginaryEllipses = 1;
-                    positionInfo.center = false;
-                    positionInfo.position = getPositionByAngle(positionInfo.angles, {x: 250, y: availableHeight/2});
-                    break;
-                case 3:
-                    positionInfo.angles = [[0, 180]];
-                    positionInfo.numberOfImaginaryEllipses = 1;
-                    positionInfo.center = true;
-                    positionInfo.position = getPositionByAngle(positionInfo.angles, {x: 350, y: availableHeight/2});
-                    break;
-                case 4:
-                    positionInfo.angles = [[45, 135, 225, 315]];
-                    positionInfo.numberOfImaginaryEllipses = 1;
-                    positionInfo.center = false;
-					positionInfo.position = getPositionByAngle(positionInfo.angles);
-                    break;
-                case 5:
-                    positionInfo.angles = [[45, 135, 225, 315]];
-                    positionInfo.numberOfImaginaryEllipses = 1;
-                    positionInfo.center = true;
-					positionInfo.position = getPositionByAngle(positionInfo.angles, {x: 500, y: availableHeight});
-                    break;
-                case 6:
-                    positionInfo.angles = [[0, 180], [45, 135, 225, 315]];
-                    positionInfo.numberOfImaginaryEllipses = 2;
-                    positionInfo.center = false;
-					positionInfo.position = getPositionByAngle(positionInfo.angles);
-                    break;
-                default:
-                    positionInfo.center = true;
-                    positionInfo.angles = [];
-                        //excluding one table in center
-                    var tableCntInAllEllipses = totalTableCount - 1,
-                        //calculation no of ellipses from table count
-                        numberOfEllipses = Math.ceil(tableCntInAllEllipses/maxTableCountPerEllipse),
-                        //orphan table count based on total table count - total no of properly accomodated table (based on maxTableCountPerEllipse value)
-                        orphanTableCnt = maxTableCountPerEllipse - (numberOfEllipses*maxTableCountPerEllipse - tableCntInAllEllipses),
-
-                        tempEllipseCount = numberOfEllipses, 
-                        tempTableCntInAllEllipses = tableCntInAllEllipses, 
-                        actualEllipseCount = 0, tmpTableLimit = 4, tmpCnt = 0;
-
-                    while(tempTableCntInAllEllipses > 0) {
-                        if(actualEllipseCount >= 2) {
-                            tmpTableLimit = 8;
-                        }
-                        tempTableCntInAllEllipses = tempTableCntInAllEllipses - tmpTableLimit;
-                        ++actualEllipseCount;
-                    }
-                    orphanTableCnt = tempTableCntInAllEllipses + tmpTableLimit;
-
-                    positionInfo.numberOfImaginaryEllipses = actualEllipseCount;
-                    if(orphanTableCnt > 1 || orphanTableCnt <= 0) {
-                        anglesHelper(0, 1);
-                    } else {    //equals one
-                        positionInfo.center = false;
-                        positionInfo.angles.push([0, 180]);
-                        anglesHelper(1, 2);
-                    }
-					positionInfo.position = getPositionByAngle(positionInfo.angles);
-                    break;
-            }
-            function anglesHelper(initialCnt, initialTblCnt) {
-                var tmpTableCnt = initialTblCnt, tmpCnt = 0, tableAtLastEllipseCnt, anglesArray = [], angle;
-                for(var k = initialCnt; k < positionInfo.numberOfImaginaryEllipses; k++) {
-                    tmpTableCnt = tmpTableCnt + tmpCnt;
-                    if(k == positionInfo.numberOfImaginaryEllipses-1) {
-                        tableAtLastEllipseCnt = totalTableCount - tmpTableCnt;
-                    }
-                    if(k<=initialCnt+1) {
-                        tmpCnt = 4;
-                        if(tableAtLastEllipseCnt) {
-                            for(var l = 0; l < tableAtLastEllipseCnt; l++) {
-                                if(k%2 == 0) {//even
-                                    angle = (l*90)+90;
-                                } else {
-                                    angle = (l*90)+45;
-                                }
-                                if(angle > 360) {
-                                    angle = angle - 360 - 45;
-                                }
-                                anglesArray.push(angle);
-                            }
-                            positionInfo.angles.push(anglesArray);
-                        } else {
-                            if(k%2 == 0) {//even
-                                positionInfo.angles.push([0, 90, 180, 270]);
-                            } else {
-                                positionInfo.angles.push([45, 135, 225, 315]);
-                            }
-                        }
-                    } else {    //8 tables in ellipse when ellipse count is 3 and more
-                        tmpCnt = 8;
-
-                        //TODO: better positioning logic based on previous position
-                        if(tableAtLastEllipseCnt) {
-                            for(var l = 0; l < tableAtLastEllipseCnt; l++) {
-                                anglesArray.push(l*45);
-                            }
-                            positionInfo.angles.push(anglesArray);
-                        } else {
-                            positionInfo.angles.push([0, 45, 90, 135, 180, 225, 270, 315]);
-                        }
-                    }
-                }
-            }
-            return positionInfo;
-        };*/
-
-		var calculatePosition = function(rectsPositionMeta) {
+        var calculatePosition = function(rectsPositionMeta) {
 			rectsPositionMeta.forEach(function(item, idx) {
 				item.position = getTableOrbitLayout(item, rectsPositionMeta[idx-1]);
 			});
@@ -965,10 +855,10 @@
             dataArray.forEach(function(eachTable, idx) { 
             	deferred = $.Deferred();
                 table = renderTable(eachTable);
-				table.style.top = centerYPoint;
-				table.style.left = centerXPoint,
-				table.style.width = tableWidth,
-				table.style.maxHeight = tableHeight + 10
+				table.style.top = centerYPoint+"px";
+				table.style.left = centerXPoint+"px";
+				table.style.width = tableWidth+"px";
+				table.style.maxHeight = tableHeight + 10;
 				_el.appendChild(table);
 				$(".attributeslist", table).css("maxHeight", tableHeight - attributeHeight);
                 $(table).attr("data-orbitindex", positions[idx].parent.orbitCnt);
