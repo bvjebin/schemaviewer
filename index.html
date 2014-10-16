@@ -18,27 +18,40 @@
 		<script type="text/javascript" src="diagram.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {
-				$("#stage").draggable();
+				var dataList = dataProvider(), select = "";
+				var $el = $("#stage");
+				select += "<select id='datalist' class='tableCount'>";
+				for(var k = 2; k < dataList.length; k++) {
+					select += "<option "+(k == 5 ? "selected='selected'" : "")+" value='"+k+"'>"+k+"</option>";
+				}
+				select += "</select>";
+				//$("body").prepend(select);
+
+				$el.draggable();
 				window.diagram = new Diagram("stage");
-				/*diagram.drawFence(2);
-				diagram.drawFence(3);
-				diagram.drawFence(4);*/
-			    diagram
-			    	.setData(dataProvider().slice(0,5));
+				
+				window.location.hash = "#5";
+				function drawSchema(tableCnt) {
+					$el.children().remove();
+					tableCnt = tableCnt || 5;
+				    diagram
+				    	.setData(dataProvider().slice(0,tableCnt));
 
-			    var tableRenderPromises = diagram.renderTables();
-			    $.when.apply($, tableRenderPromises).then(function() {
-			    	drawConnections();
-			    });
+				    var tableRenderPromises = diagram.renderTables();
+				    $.when.apply($, tableRenderPromises).then(function() {
+				    	drawConnections();
+				    });
+				}
+				window.onhashchange = function(e) {
+					var hashValue = parseInt(window.location.hash.replace("#", ""), 10);
+					if(hashValue > 10) {
+						alert("Sorry.. no more data available to test");
+						return;
+					}
+			    	drawSchema(parseInt(window.location.hash.replace("#", ""), 10));
+			    };
 
-			    /*setTimeout(function() {
-			        //diagram.drawConnection("DS1_Table1_attr6", "DS1_Table2_attr2");
-			        diagram.drawConnection("DS1_Table1_attr2", "DS1_Table2_attr8");
-			        diagram.drawConnection("DS1_Table2_attr9", "DS1_Table1_attr1");
-					//diagram.drawConnection("DS1_Table2_attr9", "DS1_Table3_attr2");
-					//diagram.drawConnection("DS1_Table2_attr8", "DS1_Table3_attr9");
-			    }, 1000);*/
-				function drawConnections() {
+			    function drawConnections() {
 		    		diagram.drawConnection("DS1_Table1_attr2", "DS1_Table3_attr2");
 					diagram.drawConnection("DS1_Table2_attr3", "DS1_Table1_attr4");
 			        diagram.drawConnection("DS1_Table1_attr5", "DS1_Table3_attr4");
