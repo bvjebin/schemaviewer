@@ -2,7 +2,7 @@
 	<head>
 		<link rel="stylesheet" type="text/css" href="diagram.css" />
 		<title>
-			Diagram
+			Schema Viewer
 		</title>
 	</head>
 	<body>
@@ -18,63 +18,61 @@
 		<script type="text/javascript" src="diagram.js"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {
-				var dataList = dataProvider(), select = "";
 				var $el = $("#stage");
-				select += "<select id='datalist' class='tableCount'>";
-				for(var k = 2; k < dataList.length; k++) {
-					select += "<option "+(k == 5 ? "selected='selected'" : "")+" value='"+k+"'>"+k+"</option>";
-				}
-				select += "</select>";
-				//$("body").prepend(select);
-
 				$el.draggable();
-				window.diagram = new Diagram("stage");
-				
-				window.location.hash = "#5";
-				function drawSchema(tableCnt) {
+				if(!window.location.hash) {
+					window.location.hash = "#5";
+				} else {
+					getDataAndDrawSchema();
+				}
+				function getDataAndConnections() {
+					var data = dataProvider(getTableCountFromHash()),
+				    	connections = connectionProvider(data);
+					return {
+						data: data,
+						connections: connections
+					};
+				}
+				function drawSchema(data, connections) {
+					window.diagram = new Diagram("stage");
 					$el.children().remove();
-					tableCnt = tableCnt || 5;
-				    diagram
-				    	.setData(dataProvider().slice(0,tableCnt));
-
-				    var tableRenderPromises = diagram.renderTables();
+					diagram.setData(data);
+					var tableRenderPromises = diagram.renderTables();
 				    $.when.apply($, tableRenderPromises).then(function() {
-				    	drawConnections();
+				    	connections.forEach(function(connection) {
+							diagram.drawConnection(connection[0], connection[1]);	
+						});
 				    });
 				}
 				window.onhashchange = function(e) {
-					var hashValue = parseInt(window.location.hash.replace("#", ""), 10);
-					if(hashValue > 10) {
+					if(getTableCountFromHash() > 110) {
 						alert("Sorry.. no more data available to test");
 						return;
 					}
-			    	drawSchema(parseInt(window.location.hash.replace("#", ""), 10));
+					getDataAndDrawSchema();
 			    };
-
-			    function drawConnections() {
-		    		diagram.drawConnection("DS1_Table1_attr2", "DS1_Table3_attr2");
-					diagram.drawConnection("DS1_Table2_attr3", "DS1_Table1_attr4");
-			        diagram.drawConnection("DS1_Table1_attr5", "DS1_Table3_attr4");
-			        diagram.drawConnection("DS2_Table1_attr4", "DS1_Table1_attr1");
-			        diagram.drawConnection("DS2_Table2_attr3", "DS1_Table1_attr4");
-			        diagram.drawConnection("DS1_Table2_attr3", "DS2_Table1_attr3");
-			    }
-			    
-				// create the zoom listener
-				var zoomListener = d3.behavior.zoom()
-				  .scaleExtent([0.5, 2])
-				  .on("zoom", zoomHandler);
-
-				// function for handling zoom event
-				function zoomHandler() {
-				  $("#stage")
-				  	.css("-webkit-transform", "-webkit-translate("+d3.event.translate+"px)")
-				  	.css("transform", "translate("+d3.event.translate+"px)")
-				  	.css("zoom", d3.event.scale);
+				
+				function getTableCountFromHash() {
+					return parseInt(window.location.hash.replace("#", ""), 10) || 5;
 				}
 
-				// apply the zoom behavior to the svg image
-				d3.select("body").call(zoomListener);
+			    function getDataAndDrawSchema() {
+					var dataAndConnections = getDataAndConnections();
+					drawSchema(dataAndConnections.data, dataAndConnections.connections);
+					var zoomListener = d3.behavior.zoom()
+					  .scaleExtent([0.5, 2])
+					  .on("zoom", zoomHandler);
+
+					function zoomHandler() {
+					  $("#stage")
+						.css("-webkit-transform", "-webkit-translate("+d3.event.translate[0]+"px, "+d3.event.translate[1]+"px)")
+						.css("transform", "translate("+d3.event.translate[0]+"px, "+d3.event.translate[1]+"px)")
+						.css("zoom", d3.event.scale);
+					}
+
+					// apply the zoom behavior to the svg image
+					//d3.select("body").call(zoomListener);
+			    }
 			});
 		</script>
 	</body>

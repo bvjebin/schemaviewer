@@ -526,7 +526,7 @@
 				};
 				return getPoint();
 			}
-        }
+        };
 
 		function isElementInViewPort($elem) {
 			var $scrollableElement = $elem.parents(".attributeslist"),
